@@ -1,7 +1,5 @@
-venv/
-.git/
-.github/
-__pycache__/
-*.pyc
-*.ipynb
-.ipynb_checkpoints/
+Flask
+scikit-learn
+pandas
+numpy
+gunicorn
