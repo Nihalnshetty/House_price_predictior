@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boston House Price Predictor</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Boston House Price Predictor</h1>
+      <p>Enter the property details below to get an estimated market value.</p>
+    </div>
+
+    <div class="card form-card">
+      <form action="{{ url_for('predict')}}" method="post" id="predict-form">
+        <div class="input-grid">
+          <div class="input-group">
+            <label for="CRIM">CRIM</label>
+            <input type="number" step="any" min="0" max="100" name="CRIM" id="CRIM" placeholder="e.g. 0.00632"
+              value="{{ values.CRIM if values else '' }}" required />
+            <span class="helper-text">0–100 (crime rate, lower is better)</span>
+          </div>
+          <div class="input-group">
+            <label for="ZN">ZN</label>
+            <input type="number" step="any" min="0" max="100" name="ZN" id="ZN" placeholder="e.g. 18.0"
+              value="{{ values.ZN if values else '' }}" required />
+            <span class="helper-text">0–100 (residential land %)</span>
+          </div>
+          <div class="input-group">
+            <label for="INDUS">INDUS</label>
+            <input type="number" step="any" min="0" max="30" name="INDUS" id="INDUS" placeholder="e.g. 2.31"
+              value="{{ values.INDUS if values else '' }}" required />
+            <span class="helper-text">0–30 (industrial area %)</span>
+          </div>
+          <div class="input-group">
+            <label for="CHAS">CHAS</label>
+            <input type="number" step="any" min="0" max="1" name="CHAS" id="CHAS" placeholder="0 or 1"
+              value="{{ values.CHAS if values else '' }}" required />
+            <span class="helper-text">0 or 1 (near river)</span>
+          </div>
+          <div class="input-group">
+            <label for="NOX">NOX</label>
+            <input type="number" step="any" min="0.3" max="1" name="NOX" id="NOX" placeholder="e.g. 0.538"
+              value="{{ values.NOX if values else '' }}" required />
+            <span class="helper-text">0.3–1 (pollution level)</span>
+          </div>
+          <div class="input-group">
+            <label for="RM">RM</label>
+            <input type="number" step="any" min="3" max="9" name="RM" id="RM" placeholder="e.g. 6.575"
+              value="{{ values.RM if values else '' }}" required />
+            <span class="helper-text">3–9 (average number of rooms)</span>
+          </div>
+          <div class="input-group">
+            <label for="Age">AGE</label>
+            <input type="number" step="any" min="0" max="100" name="Age" id="Age" placeholder="e.g. 65.2"
+              value="{{ values.Age if values else '' }}" required />
+            <span class="helper-text">0–100 (% old houses)</span>
+          </div>
+          <div class="input-group">
+            <label for="DIS">DIS</label>
+            <input type="number" step="any" min="1" max="12" name="DIS" id="DIS" placeholder="e.g. 4.09"
+              value="{{ values.DIS if values else '' }}" required />
+            <span class="helper-text">1–12 (distance to employment centers)</span>
+          </div>
+          <div class="input-group">
+            <label for="RAD">RAD</label>
+            <input type="number" step="any" min="1" max="24" name="RAD" id="RAD" placeholder="e.g. 1.0"
+              value="{{ values.RAD if values else '' }}" required />
+            <span class="helper-text">1–24 (highway access index)</span>
+          </div>
+          <div class="input-group">
+            <label for="TAX">TAX</label>
+            <input type="number" step="any" min="150" max="800" name="TAX" id="TAX" placeholder="e.g. 296.0"
+              value="{{ values.TAX if values else '' }}" required />
+            <span class="helper-text">150–800 (property tax rate)</span>
+          </div>
+          <div class="input-group">
+            <label for="PTRATIO">PTRATIO</label>
+            <input type="number" step="any" min="12" max="22" name="PTRATIO" id="PTRATIO" placeholder="e.g. 15.3"
+              value="{{ values.PTRATIO if values else '' }}" required />
+            <span class="helper-text">12–22 (student-teacher ratio)</span>
+          </div>
+          <div class="input-group">
+            <label for="B">B</label>
+            <input type="number" step="any" min="0" max="400" name="B" id="B" placeholder="e.g. 396.9"
+              value="{{ values.B if values else '' }}" required />
+            <span class="helper-text">0–400 (demographic index)</span>
+          </div>
+          <div class="input-group">
+            <label for="LSTAT">LSTAT</label>
+            <input type="number" step="any" min="1" max="40" name="LSTAT" id="LSTAT" placeholder="e.g. 4.98"
+              value="{{ values.LSTAT if values else '' }}" required />
+            <span class="helper-text">1–40 (% lower-income population)</span>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="submit-btn">
+          <span class="btn-text">Predict Price</span>
+          <div class="loader" id="loader"></div>
+        </button>
+      </form>
+    </div>
+
+    {% if prediction_text %}
+    <div class="card result-card highlight-result" id="result-section">
+      <h2>Estimated House Price</h2>
+      <div class="price">{{ prediction_text }}</div>
+      <p class="note">This is the total estimated house price (not per square foot).</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    document.getElementById('predict-form').addEventListener('submit', function () {
+      const btnText = document.querySelector('.btn-text');
+      const loader = document.getElementById('loader');
+      const submitBtn = document.getElementById('submit-btn');
+
+      btnText.textContent = 'Predicting...';
+      loader.style.display = 'block';
+      submitBtn.classList.add('loading');
+      // Adding a tiny delay for button disable to ensure form submits
+      setTimeout(() => {
+        submitBtn.disabled = true;
+      }, 10);
+
+      const resultSection = document.getElementById('result-section');
+      if (resultSection) {
+        resultSection.style.opacity = '0.5';
+      }
+    });
+  </script>
+</body>
+
+</html>
