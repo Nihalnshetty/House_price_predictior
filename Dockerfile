@@ -1,11 +1,17 @@
 FROM python:3.11-slim
 
-COPY . /app
-
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+COPY regmodel.pkl .
+COPY scaling.pkl .
+COPY templates ./templates
+COPY static ./static
 
 EXPOSE 5000
 
-CMD ["gunicorn","--workers=4","--bind","0.0.0.0:5000","app:app"]
+CMD ["python", "app.py"]
